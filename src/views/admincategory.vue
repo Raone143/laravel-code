@@ -5,7 +5,7 @@
   </div>
   <div class="table">
       <v-toolbar flat color="white">
-        <v-toolbar-title>Products</v-toolbar-title>
+        <v-toolbar-title>CATEGORY TYPES</v-toolbar-title>
         <v-divider
           class="mx-2"
           inset
@@ -13,7 +13,7 @@
         ></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
-          <v-btn slot="activator" color="primary" dark class="mb-2">ADD Product</v-btn>
+          <v-btn slot="activator" color="primary" dark class="mb-2">ADD CATEGORY</v-btn>
           <v-card>
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
@@ -26,20 +26,12 @@
                      
                   <v-flex xs12 sm6 md4>
                     
-                    <v-text-field v-model="editedItem.product_name" label="productname" required :rules="product_namerules" ></v-text-field>
-                  </v-flex>
-                  
-                   <v-flex xs12 sm6 md4>
-                    <v-text-field v-model="editedItem.product_desc" label="productdesc" :rules="product_desc" required ></v-text-field>
+                    <v-text-field v-model="editedItem.categoryname" label="categoryname" required :rules="categoryrules" ></v-text-field>
                   </v-flex>
                   <v-flex xs12 sm6 md4>
-                    <v-text-field v-model="editedItem.book_price" label="bookprice" required :rules="pricerules" ></v-text-field>
+                    <v-text-field v-model="editedItem.position" label="position" :rules="positionrules" required ></v-text-field>
                   </v-flex>
-                  <v-btn color="blue-grey" class="black--text" required @click.native="openFileDialog">
-                  Upload
-                  <v-icon right dark> cloud_upload</v-icon>
-                </v-btn>
-                <input type="file" id="file-upload" ref="file"  style="display:none" @change="onFileChange">
+                  
                                 
                  
                 </v-layout>
@@ -57,7 +49,6 @@
       <v-data-table
         :headers="headers"
         :items="contact"
-        
         hide-actions
         class="elevation-1"
       >
@@ -67,13 +58,11 @@
         </v-alert>
       </template>
         <template slot="items" slot-scope="props">
+         
+         
+          <td>{{ props.item.categoryname }}</td>
+          <td>{{ props.item.position }}</td>
           
-          <td><v-img v-bind:src="getpic(props.item.product_image1)" aspect-ratio="1"  class="grey lighten-2"></v-img></td>
-         
-          <td>{{ props.item.product_name }}</td>
-         
-          <td>{{ props.item.product_desc }}</td>
-          <td>{{ props.item.book_price }}</td>
           
           <td >
             <v-icon
@@ -96,21 +85,9 @@
         <template slot="no-data">
           <v-btn color="primary" @click="initialize">Reset</v-btn>
         </template>
-       
-
       </v-data-table>
   </div>
-    
-          <v-pagination
-          v-model="page"
-          :length="length"
-          @input = "fetchcontent"
-          class="justify-center"
-      ></v-pagination>
-    
-      
-      
-        
+
  
   </v-app>
 </template>
@@ -125,41 +102,30 @@ export default {
           dialog: false,
           headers: [
             {
-              text: 'product_image1',
+              text: 'categoryname',
               align: 'left',
               sortable: false,
               value: ''
             },
-            { text: 'productname', value: '' },
-            
-            { text: 'product_desc', value: '' },
-            { text: 'price', value: '' },
-            { text:'actions',value:''},
+            { text: 'position', value: '' },
+            { text: 'Action', value: '' },
+           
             
           ],
           
-          product_namerules:[
-              v => !!v || 'productname is required',
+          categoryrules:[
+              v => !!v || 'categoryname is required',
           ],
-          
-          product_desc:[
-              v => !!v || 'product_desc is required'
+          positionrules:[
+              v => !!v || 'position is required'
           ],
-          pricerules:[
-               v => !!v || 'price is required'
-          ],
-          
-          img_url:'http://localhost:8000/thumbnail/',
           contact: [],
           editedIndex: -1,
           editedItem: {
-          id:'',
-          product_name: '',
-          product_desc:'',
-          book_price: '',
-          product_image1:'',
-          page:'1',
-          length:''
+            id:'',
+            categoryname: '',
+            position: ''
+            
             
             
           },
@@ -170,7 +136,7 @@ export default {
   },
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'New Category Item' : 'Edit Category Item'
     }
   },
 
@@ -185,25 +151,18 @@ export default {
   },
 
   methods: {
-    getpic(index) {
-      let url = 'http://localhost:8000/thumbnail/';
-      return url+index;
-    },
     
-    fetchcontent (page) {
-        this.page = page;
-        
-        let url = 'http://localhost:8000/api/Book?page='+page;
+    
+    fetchcontent () {
+        let url = 'http://localhost:8000/api/Categoryname/';
         let headers = {
             'method' : 'GET'
           };
           fetch(url,headers).then((response) => {
             return response.json();
           }).then((response) => {
-            
             console.log(response);  // eslint-disable-line no-console
-            this.contact = response.data.data;
-            this.length = response.data.total;
+            this.contact = response.data;
           },(error) => {
             console.log("error",error);  // eslint-disable-line no-console
           });
@@ -213,17 +172,7 @@ export default {
       this.fetchcontent();
       
     },
-    openFileDialog() {
-           document.getElementById('file-upload').click();
-           
-            
-        },
-        onFileChange() {
-            
-            this.file = this.$refs.file.files[0];   
-            
-        },
-       
+    
 
     editItem (item) {
       this.editedIndex = this.contact.indexOf(item)
@@ -266,12 +215,11 @@ export default {
             
               let url = 'http://localhost:8000/api/Book/'+id;
               let formData = new FormData();
-              formData.append('_method','put');
-              formData.append('product_name', this.editedItem.product_name);
-              formData.append('product_desc', this.editedItem.product_desc);
-              formData.append('book_price', this.editedItem.book_price);
-              formData.append('product_image1',this.file);  
-               
+                formData.append('_method','put');
+                formData.append('book_name', this.editedItem.book_name);
+                formData.append('isbn_no', this.editedItem.isbn_no);
+                formData.append('book_price', this.editedItem.book_price);
+                formData.append('product_image1',this.file);
                 
               
               fetch(url, {
@@ -293,9 +241,8 @@ export default {
 
         let formData = new FormData();
         
-        formData.append('product_name', this.editedItem.product_name);
-        
-        formData.append('product_desc', this.editedItem.product_desc);
+        formData.append('book_name', this.editedItem.book_name);
+        formData.append('isbn_no', this.editedItem.isbn_no);
         formData.append('book_price', this.editedItem.book_price);
         formData.append('product_image1',this.file);
         
