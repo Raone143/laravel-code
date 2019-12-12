@@ -1,0 +1,290 @@
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">   
+<style>
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .5);
+  display: table;
+  transition: opacity .3s ease;
+}
+.button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 2px 2px;
+  cursor: pointer;
+  float:right;
+}
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+.modal-container {
+  width: 400px;
+  height:500px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+  transition: all .3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+.modal-body {
+  margin: 20px 0;
+}
+.modal-default-button {
+  float: right;
+}
+/*
+ * The following styles are auto-applied to elements with
+ * transition="modal" when their visibility is toggled
+ * by Vue.js.
+ *
+ * You can easily play with the modal transition by editing
+ * these styles.
+ */
+.modal-enter {
+  opacity: 0;
+}
+.modal-leave-active {
+  opacity: 0;
+}
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+.succes_pop_up {
+	background-color:red;
+	color:white;
+	z-index:+999999;
+	position:fixed;
+	width:10%;
+	padding:5px;
+	top:+60%;
+	right:22%;
+	float:right;
+}
+</style>
+<!-- template for the modal component -->
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+      <div class="modal-mask">
+        <div class="modal-wrapper">
+          <div class="modal-container">
+  
+            
+  
+            <div class="modal-body">
+			
+              
+			  <div v-for="(item,index) in vat.userdetails">
+              <div  style="background-color:yellow;width:0px auto;padding:20px 40px;text-align:center;"  @click="vat.getcall(''+item.id+'')">{{item.username}} : {{item.id}}<div style="float:right;"><i class="fa fa-chevron-circle-down"  aria-hidden="true"></i></div></div><br>
+                <form v-bind:id="'frmUserInfo'+item.id+''" v-bind:name="'frmUserInfo'+item.id+''" method="post">
+                  	<div v-bind:id="'error_info'+item.id+''" style="display:none">all the options are required</div>
+				<div class="user_info" v-bind:id="item.id" style="display:none">
+			
+				<div style="overflow:hidden;">
+				<div style="width:33%;height:20%;float:left;overflow:hidden;text-align:center;">
+				<label>Region</label><br>
+				<select name="region_info" v-bind:disabled="vat.bt_disabled" required id="region_info"  >
+				<option v-for="region_info in vat.regions" name="region_info" :value="region_info.id" :selected="region_info.id == item.Region ? 'selected' : ''" >{{region_info.name}}</option>
+				</select> 
+				</div>
+				<div  style="width:33%;height:20%;float:left;overflow:hidden;text-align:center;">
+				<label>Role</label><br>
+				<select required v-bind:disabled="vat.bt_disabled"  name="region_info3" id="region_info3"  >
+				<option v-for="region_info3 in vat.role"  name="region_info3"    :value="region_info3.id" :selected="region_info3.id == item.Role ? 'selected' : ''" >{{region_info3.name}}</option>
+				</select> 
+				</div>
+				
+				<div  style="width:33%;height:20%;float:left;text-align:center;">
+				<label>Level</label><br>
+				<select required v-bind:disabled="vat.bt_disabled" name="region_info1" id="region_info1"  >
+				<option v-for="region_info1 in vat.level" name="region_info1"  :value="region_info1.id" :selected="region_info1.id == item.Level ? 'selected' : ''"  >{{region_info1.name}}</option>
+				</select> 
+				</div>    
+				<div  style="width:33%;height:20%;float:left;text-align:center;">
+				<label>Language</label><br>
+				<select required v-bind:disabled="vat.bt_disabled"  name="region_info2" id="region_info2">
+				<option v-for="region_info2 in vat.language"  :value="region_info2.id" :selected="region_info2.id == item.Language ? 'selected' : ''" >{{region_info2.name}}</option>
+				
+				</select> 
+				</div>
+				
+				<input type="button" class="button" v-bind:id="'btn_edit'+item.id+''" v-on:click="vat.changeoptions('btn_edit'+item.id+'', item.id)" value="EDIT">
+				</div>
+				
+			 </div>
+			 </form>
+            </div>
+            </div>
+			
+			 <br>
+            <div class="modal-footer">
+              <slot name="footer">
+                
+               
+              </slot>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </script>
+  
+  <!-- app -->
+  <div id="app">
+     <button style="display:none" id="show-modal" @click="showModal=true" ref="myBtn">Show Modal</button>
+    <!-- use the modal component, pass in the prop -->
+    <modal v-if="showModal" @close="showModal = false">
+      <!--
+        you can use custom content here to overwrite
+        default content
+      -->
+      
+    </modal>
+  <div class='succes_pop_up' style="display:none">DATA UPDATED SUCCESSFULLY</div>
+  </div>
+ 
+  <script type="text/javascript">
+function getParameterByName(data_info) {
+    var first_split = data_info.split('&');
+	
+	var form_fields_info = [];
+	for(f = 0; f < first_split.length; f++) {
+		var split_info = first_split[f];
+		var key_value  = split_info.split('=');
+		
+		form_fields_info[key_value[0]] = key_value[1];
+	}
+	
+	return form_fields_info;
+}
+  // register modal component
+Vue.component('modal', {
+  template: '#modal-template'
+})
+var errors=[];
+// start app
+var vat = new Vue({
+  el: '#app',
+  data: {
+    showModal: false,
+    seen:'',
+	userdetails:'',
+	user:'',
+	errors:[],
+	bt_disabled:true
+  },
+  methods: {
+    getcall: function(id) {
+	  $('.user_info').hide();
+		$('#'+id).toggle();
+		
+
+		
+    },
+	changeoptions: function(btn_id, user_id) {
+	
+		let btn_value = $('#'+btn_id).val();
+		if(btn_value == 'EDIT'){
+			
+			this.bt_disabled = false;
+			let btn_value = $('#'+btn_id).val('SAVE');
+			
+		
+		
+
+		
+
+		}
+		else if(btn_value == 'SAVE') {
+		
+			
+			let formdata = $("#frmUserInfo"+user_id).serialize();
+			var form_info 	=	getParameterByName(formdata);
+			var region		=	form_info['region_info'];
+			var role 		=	form_info['region_info3'];
+			var level		=	form_info['region_info1'];
+			var language	=	form_info['region_info2'];
+			
+			if(region != ""
+				&& role != ""
+				&& level != ""
+				&& language != "")
+				{
+				    $('#error_info'+user_id).hide();
+					$.ajax({
+						type: "POST",
+						data : formdata,
+						url: "http://localhost/update_ajax.php?user_id="+user_id,
+						success: function(data,statusCode) {
+						  if(statusCode == 'success') {
+							$(".succes_pop_up").show();
+						  }
+						}
+					})
+					.done(function() {
+					  setTimeout(function() {
+						$(".succes_pop_up").fadeOut();
+						}, 2000);
+					});
+				}
+				else {
+					this.bt_disabled = true;
+          $('.error').show();
+		               $('#error_info'+user_id).css({ "text-align":"center","color":"red"});
+		              $('#error_info'+user_id).show();
+					//$('#'+btn_id).css({"background-color":"pink", "color":"white"});
+				}
+			
+		}
+		
+		
+		 
+		 
+	}
+  },
+  mounted: function() {
+		console.log("test");
+		
+		const elem = this.$refs.myBtn;
+        elem.click();
+		var response = '';
+		
+        $.ajax({
+            type: "GET",
+            url: "http://localhost/vuefetch.php",
+            
+            success: (response) => {
+			    console.log(response);
+                this.userdetails = response.users;
+				this.regions = response.regions;
+				this.role = response.role;
+				this.level = response.level;
+				this.language = response.language;
+            }
+        });
+		
+		
+  }
+});
+console.log(vat);
+  </script>
